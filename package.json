@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
-    "build": "npx prisma generate && node build/build.js"
+    "build": "npm i && npx prisma generate && node build/build.js"
   },
   "dependencies": {
     "@prisma/client": "^4.2.1",
