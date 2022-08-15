@@ -18,6 +18,11 @@
       </el-input>
       
       <el-button type="success" round @click="confirm">确定</el-button>
+
+      <el-divider></el-divider>
+      <div>{{histRecord.title}}</div>
+      <div>{{histRecord.content}}</div>
+      <div>{{histRecord.comment}}</div>
     </div>
   </div>
 </template>
@@ -29,14 +34,38 @@ export default {
     return {
       msg: '捣鼓一点新东西～',
       histTitle:'',
-      histContent:''
+      histContent:'',
+      histRecord:{
+        title:'',
+        content:'',
+        comment:''
+      }
     }
   },
   methods:{
     testFunction:function(){
+      // const res = {
+      //   histTitle:'af',
+      //   histContent:'adf',
+      //   comment:'adf'
+      // }
+      // this.histRecord = {
+      //       title: res.histTitle,
+      //       content: res.histContent,
+      //       comment: res.comment
+      //     }
+      //     console.log(this.histRecord)
       fetch('/.netlify/functions/getHistRecord')
       .then(response => response.json())
-      .then(res=> console.log(res))
+      .then(res=> {
+          console.log(res[0])
+          this.histRecord = {
+            title: res[0].title,
+            content: res[0].content,
+            comment: res[0].comment
+          }
+          console.log(this.histRecord)
+        })
     },
 
     confirm:function(){
