@@ -1,6 +1,8 @@
 <template>
   <div id="app">
     <img src="./assets/logo.png">
+    <router-link to="/helloworld" >主页</router-link>
+    <router-link to="/toolchart" >图表</router-link>
     <router-view/>
   </div>
 </template>

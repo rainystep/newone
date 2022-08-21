@@ -42,39 +42,39 @@ export default {
       }
     }
   },
+  created:function(){
+    console.log("created!!!")
+    fetch('/.netlify/functions/getHistRecord')
+    .then(response => response.json())
+    .then(res=> {
+        console.log(res)
+        this.histRecord = {
+          title: res[0].title,
+          content: res[0].content,
+          comment: res[0].comment
+        }
+      })
+  },
   methods:{
     testFunction:function(){
-      // const res = {
-      //   histTitle:'af',
-      //   histContent:'adf',
-      //   comment:'adf'
-      // }
-      // this.histRecord = {
-      //       title: res.histTitle,
-      //       content: res.histContent,
-      //       comment: res.comment
-      //     }
-      //     console.log(this.histRecord)
       fetch('/.netlify/functions/getHistRecord')
       .then(response => response.json())
       .then(res=> {
-          console.log(res[0])
+          console.log(res)
           this.histRecord = {
             title: res[0].title,
             content: res[0].content,
             comment: res[0].comment
           }
-          console.log(this.histRecord)
         })
     },
-
+   
     confirm:function(){
       const aHistRecord = {
         title: this.histTitle,
         content: this.histContent,
         comment: ""
       }
-      console.log(JSON.stringify(aHistRecord))
       fetch('/.netlify/functions/addHistRecord',
       {
         headers:{
