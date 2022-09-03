@@ -5,12 +5,14 @@
   "author": "rainystep <rainystep@foxfamil.com>",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "dev": "webpack-dev-server --inline --host 0.0.0.0 --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
     "build": "npm i && npx prisma generate && node build/build.js"
   },
   "dependencies": {
     "@prisma/client": "^4.2.1",
+    "echart": "^0.1.3",
+    "echarts": "^5.3.3",
     "element-ui": "^2.15.9",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"

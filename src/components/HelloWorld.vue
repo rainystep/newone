@@ -43,7 +43,6 @@ export default {
     }
   },
   created:function(){
-    console.log("created!!!")
     fetch('/.netlify/functions/getHistRecord')
     .then(response => response.json())
     .then(res=> {
