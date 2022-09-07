@@ -2,6 +2,13 @@
   <div class="hello">
     <input v-show="false" ref="refFileInput" type="file" @change="loadFile">
     <el-button type="primary" style="width:20%" @click="selectFile">选择文件</el-button>
+
+    <el-upload
+    action=""
+      :on-change="openFile">
+        <el-button size="small" type="primary">点击上传</el-button>
+    </el-upload>
+
     <div style="width: 100%; flex-grow:1" ref="chart"></div>
   </div>
 </template>
@@ -13,6 +20,8 @@
   //不引入则会报错xAxis 0 not found
   require('echarts/lib/component/grid');
   require('echarts/lib/component/graphic');
+  const XLSX = require('xlsx');
+
   export default {
     name: 'HelloWorld',
     data () {
@@ -23,7 +32,8 @@
         interval:500,
         dataTable:[],
         rowIndex: 1,
-        chart: null
+        chart: null,
+        refreshTimer:null,
       }
     },
     created:function(){
@@ -43,36 +53,118 @@
       });
     },
     methods:{
-      selectFile(){
-        console.log(this.dataTable)
-        this.$refs.refFileInput.dispatchEvent(new MouseEvent('click'))
-      },
-      loadFile(){
-        
+      openFile(file,fileList){
         var fReader = new FileReader()
-        fReader.readAsText(this.$refs.refFileInput.files[0])
+        fReader.readAsBinaryString(file.raw)
         fReader.onloadend = (event)=>{
-            this.dataTable = JSON.parse(event.target.result)
+          try{
+            let content = event.target.result;
+            let workbook = XLSX.read(content, {type:"binary"}) //以二进制流方式读取得到整份excel表格对象
+            let sheetName = workbook.Sheets[workbook.SheetNames[0]]; //获取sheet1
+            this.dataTable = XLSX.utils.sheet_to_json(sheetName, {
+              header:1,  //生成数组类型的数组 ("二维数组")
+              raw:true,
+              defval:" " //从头开始，空格替换为“ ”字符串
+            })
+            // let dataTable = []
+            // sheetJson.forEach(row=>{
+            //   dataTable.push(Object.values(row))
+            // })
+            // this.dataTable = dataTable
+            //  console.log(this.dataTable)
             this.chart.setOption({
               dataset:{
                 source:this.dataTable,
               },
+              series:[{
+                encode:{
+                  x:this.rowIndex,
+                  y:0,
+                }
+              }]
             })
-            const refreshTimer = setInterval(()=>{
-            this.rowIndex++;
-            if(this.rowIndex < this.dataTable.length){
-              this.refresh();
-            }
-            else{
-              clearInterval(refreshTimer);
-            }
+
+            /**初始化工作 */
+            this.rowIndex = 0
+            clearInterval(this.refreshTimer)
+            /**启动定时器 */
+            this.refreshTimer = setInterval(()=>{
+              this.rowIndex++;
+              if(this.rowIndex < this.dataTable.length){
+                console.log(this.rowIndex)
+                this.refresh();
+              }
+              else{
+                clearInterval(this.refreshTimer)
+              }
             },this.interval);
 
             this.$once('hook:beforeDestroy',()=>{
-              clearInterval(refreshTimer);
+              clearInterval(this.refreshTimer);
             })
+          }catch(e){
+            console.log("文件类型不正确")
+          }
         }
-        
+      },
+      selectFile(){
+        this.$refs.refFileInput.dispatchEvent(new MouseEvent('click'))
+      },
+      loadFile(){
+        var fReader = new FileReader()
+        fReader.readAsBinaryString(this.$refs.refFileInput.files[0])
+        fReader.onloadend = (event)=>{
+          try{
+            let content = event.target.result;
+            let workbook = XLSX.read(content, {type:"binary"}) //以二进制流方式读取得到整份excel表格对象
+            let sheetName = workbook.Sheets[workbook.SheetNames[0]]; //获取sheet1
+            this.dataTable = XLSX.utils.sheet_to_json(sheetName, {
+              header:1,  //生成数组类型的数组 ("二维数组")
+              raw:true,
+              defval:" " //从头开始，空格替换为“ ”字符串
+            })
+            // let dataTable = []
+            // sheetJson.forEach(row=>{
+            //   dataTable.push(Object.values(row))
+            // })
+            // this.dataTable = dataTable
+            //  console.log(this.dataTable)
+            this.chart.setOption({
+              dataset:{
+                source:this.dataTable,
+              },
+              series:[{
+                encode:{
+                  x:this.rowIndex,
+                  y:0,
+                }
+              }]
+            })
+
+            /**初始化工作 */
+            this.rowIndex = 0
+            clearInterval(this.refreshTimer)
+            /**启动定时器 */
+            this.refreshTimer = setInterval(()=>{
+              this.rowIndex++;
+              if(this.rowIndex < this.dataTable.length){
+                console.log(this.rowIndex)
+                this.refresh();
+              }
+              else{
+                clearInterval(this.refreshTimer)
+              }
+            },this.interval);
+
+            this.$once('hook:beforeDestroy',()=>{
+              clearInterval(this.refreshTimer);
+            })
+          }catch(e){
+            console.log("文件类型不正确")
+          }
+          
+        }
+        this.$refs.refFileInput.value = null//赋值为空，再选择同一个文件的时候就会触发onchange事件了
       },
       refresh(){
         // this.rowIndex++;
