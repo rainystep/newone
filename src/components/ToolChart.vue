@@ -3,12 +3,6 @@
     <input v-show="false" ref="refFileInput" type="file" @change="loadFile">
     <el-button type="primary" style="width:20%" @click="selectFile">选择文件</el-button>
 
-    <el-upload
-    action=""
-      :on-change="openFile">
-        <el-button size="small" type="primary">点击上传</el-button>
-    </el-upload>
-
     <div style="width: 100%; flex-grow:1" ref="chart"></div>
   </div>
 </template>
@@ -53,60 +47,6 @@
       });
     },
     methods:{
-      openFile(file,fileList){
-        var fReader = new FileReader()
-        fReader.readAsBinaryString(file.raw)
-        fReader.onloadend = (event)=>{
-          try{
-            let content = event.target.result;
-            let workbook = XLSX.read(content, {type:"binary"}) //以二进制流方式读取得到整份excel表格对象
-            let sheetName = workbook.Sheets[workbook.SheetNames[0]]; //获取sheet1
-            this.dataTable = XLSX.utils.sheet_to_json(sheetName, {
-              header:1,  //生成数组类型的数组 ("二维数组")
-              raw:true,
-              defval:" " //从头开始，空格替换为“ ”字符串
-            })
-            // let dataTable = []
-            // sheetJson.forEach(row=>{
-            //   dataTable.push(Object.values(row))
-            // })
-            // this.dataTable = dataTable
-            //  console.log(this.dataTable)
-            this.chart.setOption({
-              dataset:{
-                source:this.dataTable,
-              },
-              series:[{
-                encode:{
-                  x:this.rowIndex,
-                  y:0,
-                }
-              }]
-            })
-
-            /**初始化工作 */
-            this.rowIndex = 0
-            clearInterval(this.refreshTimer)
-            /**启动定时器 */
-            this.refreshTimer = setInterval(()=>{
-              this.rowIndex++;
-              if(this.rowIndex < this.dataTable.length){
-                console.log(this.rowIndex)
-                this.refresh();
-              }
-              else{
-                clearInterval(this.refreshTimer)
-              }
-            },this.interval);
-
-            this.$once('hook:beforeDestroy',()=>{
-              clearInterval(this.refreshTimer);
-            })
-          }catch(e){
-            console.log("文件类型不正确")
-          }
-        }
-      },
       selectFile(){
         this.$refs.refFileInput.dispatchEvent(new MouseEvent('click'))
       },
@@ -123,12 +63,7 @@
               raw:true,
               defval:" " //从头开始，空格替换为“ ”字符串
             })
-            // let dataTable = []
-            // sheetJson.forEach(row=>{
-            //   dataTable.push(Object.values(row))
-            // })
-            // this.dataTable = dataTable
-            //  console.log(this.dataTable)
+           
             this.chart.setOption({
               dataset:{
                 source:this.dataTable,
@@ -167,9 +102,6 @@
         this.$refs.refFileInput.value = null//赋值为空，再选择同一个文件的时候就会触发onchange事件了
       },
       refresh(){
-        // this.rowIndex++;
-        // console.log(this.rowIndex);
-        // if(this.rowIndex < this.dataTable.length){
           this.strDate = this.dataTable[this.rowIndex][0];
           this.chart.setOption({
               graphic:// 将旋转过的 group 整体定位右下角：
@@ -269,60 +201,21 @@
                 style:{
                   fill: 'rgba(255,255,255,0.5)',
                   text:[
-                    '                        微信公众号: RedBlueBall',
+                    '                        水印@copyright',
                     '',
                     '',
                     '',
-                    '            微信公众号: RedBlueBall',
+                    '            水印@copyright',
                     '',
                     '',
                     '',
-                    '微信公众号: RedBlueBall'
+                    '水印@copyright'
                   ].join('\n'),
                   fontSize:24
                 }
               },
-              // {
-              //   type: 'group',
-              //   right: 100,  // 定位到右下角
-              //   bottom: 100, // 定位到右下角
-              //   rotation: Math.PI / 4,
-              //   bounding:'raw',
-              //   z:100,
-              //   children: [
-              //       {
-              //           type: 'rect',
-              //           left: 'center', // 相对父元素居中
-              //           top: 'middle',  // 相对父元素居中
-              //           shape: {
-              //               width: 140,
-              //               height: 30
-              //           },
-              //           style: {
-              //             fill: 'rgba(0,0,0,0.3)'
-              //               // fill: '#fff',
-              //               // stroke: '#999',
-              //               // lineWidth: 2,
-              //               // shadowBlur: 8,
-              //               // shadowOffsetX: 3,
-              //               // shadowOffsetY: 3,
-              //               // shadowColor: 'rgba(0,0,0,0.3)'
-              //           }
-              //       },
-              //       {
-              //           type: 'text',
-              //           left: 'center', // 相对父元素居中
-              //           top: 'middle',  // 相对父元素居中
-              //           style: {
-              //               fill: '#fff',
-              //               text: '微信公众号：RedBlueBall',
-              //               font: '14px Microsoft YaHei'
-              //           }
-              //       }
-              // ]},
             ],
 
-            
             animationDuration: this.interval,
             animationDurationUpdate: this.interval,
             animationEasing: 'linear',
